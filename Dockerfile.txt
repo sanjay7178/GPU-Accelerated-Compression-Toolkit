@@ -1,0 +1,56 @@
+FROM python:3.9-slim-buster
+
+# Create a new user and set permissions
+RUN useradd -m -u 1000 user
+
+# Install required system packages using apt-get
+RUN apt-get update && apt-get install -y \
+    curl \
+    python3-pip \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    cargo \
+    python3-pypdf2 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV OPENCV_VERSION="4.10.0"
+
+RUN apt-get update && apt-get install -y python3-opencv
+RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
+
+RUN apt-get -qq install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        wget \
+        unzip \
+        yasm \
+        pkg-config \
+        libswscale-dev \
+        libtbb2 \
+        libtbb-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libopenjp2-7-dev \
+        libavformat-dev \
+        libpq-dev 
+
+
+
+COPY ./requirements.txt .
+RUN pip install --no-cache -r requirements.txt
+
+# Set the working directory
+WORKDIR /app
+
+
+# Copy the application code to the working directory
+COPY --chown=user . /app
+
+# Expose the port the app runs on
+EXPOSE 7860
+
+# Define the default command
+CMD ["python", "app.py"]
